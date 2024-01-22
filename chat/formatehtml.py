@@ -2,6 +2,7 @@ import mysql.connector
 import re
 from minio import Minio
 import time
+import asyncio
 import requests
 from minio.error import S3Error
 
@@ -37,13 +38,12 @@ cursor.execute("SELECT * FROM wolive_chats")
 records = cursor.fetchall()
 
 
-def fileupload(file, url):
+async def fileupload(file, url):
     print(url)
     response = requests.get(url, proxies=proxies)
     with open('./file/tmp.jpg', 'wb') as f:
         f.write(response.content)
     client.fput_object(bucket_name, file, "./file/tmp.jpg")
-
 
 
 def formate_row(row):
@@ -63,7 +63,7 @@ def formate_row(row):
         if "kf.douyin" not in content:
             content = "https://kf.douyin68.com" + content
         source_pic = content.split("/")[-1]
-        fileupload(source_pic, content)
+        asyncio.run(fileupload(source_pic, content))
     rows = [cid, visiter_id, service_id, business_id, content, timestamp, state, direction, unstr, avatar]
     print(rows)
 
